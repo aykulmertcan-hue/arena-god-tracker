@@ -1,0 +1,21 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0e1015; color: #e8eaed; font-family: system-ui, sans-serif; }
+.account-form { max-width: 420px; margin: 12vh auto; display: flex; flex-direction: column; gap: 12px; padding: 0 16px; }
+.account-form h1 { text-align: center; }
+.riot-id { display: flex; align-items: center; gap: 8px; }
+.riot-id input, select, button { padding: 10px; border-radius: 8px; border: 1px solid #2a2e38; background: #161922; color: inherit; }
+.backfill { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+button { cursor: pointer; }
+.error { color: #ff6b6b; }
+.app { max-width: 1100px; margin: 0 auto; padding: 16px; }
+.app header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.banner { background: #1d2530; padding: 8px 12px; border-radius: 8px; }
+.progress { margin-bottom: 16px; }
+.bar { height: 8px; background: #1d212b; border-radius: 999px; margin-top: 6px; overflow: hidden; }
+.fill { height: 100%; background: linear-gradient(90deg, #c89b3c, #f0e6d2); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+.champ { position: relative; text-align: center; font-size: 11px; opacity: 0.35; filter: grayscale(1); transition: 0.15s; }
+.champ.done { opacity: 1; filter: none; }
+.champ img { width: 100%; border-radius: 8px; display: block; }
+.champ .check { position: absolute; top: 4px; right: 4px; background: #2ecc71; color: #07210f; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; line-height: 18px; }
