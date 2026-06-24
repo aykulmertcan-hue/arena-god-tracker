@@ -9,3 +9,4 @@ node_modules/
 frontend/dist/
 backend/app/static/
 .pytest_cache/
+*.egg-info/
