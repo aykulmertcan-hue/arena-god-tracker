@@ -71,6 +71,11 @@ def create_app(start_worker: bool = True) -> FastAPI:
     app = FastAPI(title="Arena God Tracker", lifespan=lifespan)
     app.state.start_worker = start_worker
     app.include_router(router, prefix="/api")
+    import os
+    from fastapi.staticfiles import StaticFiles
+    static_dir = os.path.join(os.path.dirname(__file__), "static")
+    if os.path.isdir(static_dir):
+        app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
     return app
 
 

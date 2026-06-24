@@ -1,0 +1,17 @@
+services:
+  arena:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      RIOT_API_KEY: ${RIOT_API_KEY}
+      DATABASE_URL: sqlite:////data/arena.db
+      POLL_INTERVAL_SECONDS: "90"
+      DEFAULT_REGION: europe
+    volumes:
+      - arena-data:/data
+
+volumes:
+  arena-data:

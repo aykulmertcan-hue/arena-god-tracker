@@ -1,0 +1,12 @@
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+.git
+*.db
+*.db-wal
+*.db-shm
+backend/app/static
+**/.env
+.pytest_cache
+**/*.egg-info
