@@ -60,6 +60,10 @@ async def lifespan(app: FastAPI):
         stop_event.set()
         if task:
             task.cancel()
+            try:
+                await asyncio.wait_for(asyncio.shield(task), timeout=5.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                pass
         await http.aclose()
 
 
