@@ -66,7 +66,7 @@ def current(session: Session = Depends(get_session)):
 def checklist(account_id: int, session: Session = Depends(get_session)):
     if not session.get(WatchedAccount, account_id):
         raise HTTPException(404, "account not found")
-    return build_checklist(session, account_id)
+    return build_checklist(session, account_id, season_start_ms=settings.season_start_ms)
 
 
 @router.get("/accounts/{account_id}/status")
