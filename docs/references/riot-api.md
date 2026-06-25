@@ -237,7 +237,7 @@ Paginate with `start=0`, `start=100`, `start=200`, etc., until fewer than `count
 
 **Known limit**: Pagination beyond approximately start=990 returns empty. Match history is effectively limited to the most recent ~1000 matches AND the 2-year retention window (whichever is more restrictive). See §5.3.
 
-**Type + Queue filter behavior**: The `type` and `queue` filters are mutually inclusive — a match must satisfy both if both are specified. For Arena, using `queue=1700` alone is the safest approach.
+**Type + Queue filter behavior**: The `type` and `queue` filters are mutually inclusive — a match must satisfy both if both are specified. For Arena, do NOT rely on a single queue id — see the verified Queue IDs table below (the id changed 1700 → 1750). Query each known Arena queue id, or filter by `gameMode == "CHERRY"` on match detail.
 
 ### 5.2 Get Match Detail
 
@@ -251,7 +251,7 @@ Returns a `MatchDto` containing `metadata` and `info`.
 
 | Field | Type | Notes |
 |---|---|---|
-| `queueId` | int | `1700` (original Arena) or `1710` (8-team Arena, added later) |
+| `queueId` | int | `1700` (legacy Arena) or `1750` (current Arena, 2026) — both `gameMode=CHERRY` |
 | `gameMode` | string | `"CHERRY"` — the Arena game mode string |
 | `gameDuration` | int | Seconds (for matches after patch 11.20). For older matches: milliseconds. Check for `gameEndTimestamp` to know which unit. |
 | `gameEndTimestamp` | long | Unix ms timestamp when the match ended on the game server. Added patch 11.20 (Oct 2021). Use `gameStartTimestamp + max(timePlayed)` if more precise. |
@@ -274,14 +274,17 @@ Returns a `MatchDto` containing `metadata` and `info`.
 
 **Arena 1st place condition**: `participant.subteamPlacement == 1`
 
-#### Queue IDs for Arena
+#### Queue IDs for Arena — VERIFIED live (TR, 2026-06-25)
+
+⚠️ **The Arena queue ID changed over time. Filtering by a single queue silently misses matches.** Confirmed by live data on a TR account: matches up to 2026-05-04 were `queueId=1700`; matches from then through 2026-06-25 are `queueId=1750`. Both have `gameMode == "CHERRY"`.
 
 | Queue ID | Description |
 |---|---|
-| 1700 | Original Arena (2v2v2v2) — use this for backfill |
-| 1710 | Later 8-team Arena variant. Both should be included in backfill. |
+| 1700 | Legacy Arena (used through ~early/mid 2026). |
+| 1750 | **Current Arena** (in use 2026-06, verified live). |
+| 1710 | Sometimes cited for an 8-team Arena variant — NOT observed in this account's data; treat as unconfirmed. |
 
-Both have `gameMode == "CHERRY"`.
+**Implication for the tracker:** scan **all** Arena queue ids, not just one. The app uses `ARENA_QUEUE_IDS = (1700, 1750)` and queries each. The most future-proof alternative is to drop the `queue` filter and keep any match whose detail has `gameMode == "CHERRY"` (costs more match-detail calls). When Riot rotates the queue id again, add the new id here. Always cross-check against Challenges-V1 `602002` (official all-time count) — if the scan is far below it, a queue id is probably missing.
 
 ### 5.3 Match History Retention
 
