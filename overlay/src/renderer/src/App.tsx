@@ -49,9 +49,19 @@ export default function App() {
         <div className="title">
           Arena God {status?.account ? `· ${status.account.gameName}#${status.account.tagLine}` : ""}
         </div>
-        <button className="close no-drag" onClick={() => window.overlay.hide()}>
-          ×
-        </button>
+        <div className="actions no-drag">
+          <button
+            className="refresh"
+            disabled={status?.scanning}
+            title="Son taramadan beri oynanan maçları tara ve 1.'likleri güncelle"
+            onClick={() => window.overlay.triggerScan()}
+          >
+            {status?.scanning ? "⟳ Taranıyor…" : "⟳ Yenile"}
+          </button>
+          <button className="close" onClick={() => window.overlay.hide()}>
+            ×
+          </button>
+        </div>
       </header>
 
       <div className="progress no-drag">
@@ -82,6 +92,12 @@ export default function App() {
         </button>
       </div>
 
+      {checklist && checklist.total === 0 ? (
+        <div className="empty no-drag">
+          Henüz tarama yok. <b>Yenile</b>'ye basınca ilk taramayı (tüm Arena geçmişin)
+          yapar; sonraki her basışta yalnızca son taramadan beri oynadığın maçları tarar.
+        </div>
+      ) : (
       <div className="grid no-drag">
         {shown.map((c) => (
           <div key={c.key} className={`champ ${c.completed ? "done" : "todo"}`} title={c.name}>
@@ -90,6 +106,7 @@ export default function App() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

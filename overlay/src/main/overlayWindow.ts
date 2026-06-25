@@ -3,6 +3,10 @@ import { join } from "node:path";
 
 // Transparent, frameless, always-on-top overlay window. Created hidden;
 // the orchestrator shows it during Arena champ select.
+//
+// SAFETY: this MUST stay a separate OS window. Never inject into the game,
+// hook its renderer, read game memory, or automate input — see SAFETY.md.
+// Those would trip Vanguard and risk account bans.
 export function createOverlayWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 360,

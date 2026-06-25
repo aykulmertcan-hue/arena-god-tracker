@@ -83,16 +83,16 @@ async function onLcuChange(state: LcuState): Promise<void> {
       };
       store.save();
       pushStatus();
-      void runScan(true); // new account -> full backfill
+      // No automatic scan — the user scans manually via Refresh.
     }
   }
 
-  // Show overlay only during Arena champ select.
+  // Show overlay only during Arena champ select. No automatic scan here —
+  // the user refreshes manually via the Refresh button (scan:trigger).
   const visible = ALWAYS_SHOW || state.inArenaChampSelect;
   if (win) {
     if (visible && !win.isVisible()) {
       win.showInactive();
-      void runScan(false); // quick incremental refresh on entering champ select
     } else if (!visible && win.isVisible() && !ALWAYS_SHOW) {
       win.hide();
     }
@@ -114,11 +114,13 @@ function registerIpc(): void {
     store.data.settings.riotApiKey = key.trim();
     store.save();
     pushStatus();
-    void runScan(true);
-    return true;
+    return true; // no automatic scan — user presses Refresh
   });
   ipcMain.handle("scan:trigger", () => {
-    void runScan(false);
+    // First scan (no data yet) -> full backfill; otherwise incremental
+    // (only games since the last scan).
+    const full = Object.keys(store.data.processedMatches).length === 0;
+    void runScan(full);
     return true;
   });
   ipcMain.handle("window:hide", () => {
@@ -141,10 +143,8 @@ app.whenReady().then(() => {
   const watcher = new LcuWatcher((s) => void onLcuChange(s));
   watcher.start();
 
-  // Periodic incremental refresh while running.
-  setInterval(() => {
-    if (store.data.account && !scanning) void runScan(false);
-  }, 5 * 60 * 1000);
+  // No periodic auto-refresh by design — updates happen only when the user
+  // presses Refresh (scan:trigger), which scans games since the last scan.
 
   app.on("window-all-closed", () => {
     watcher.stop();
