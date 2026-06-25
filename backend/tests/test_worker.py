@@ -10,10 +10,10 @@ from app.riot.client import RiotAPIError
 class FakeRiot:
     def __init__(self, fail=False):
         self.fail = fail
-    async def get_arena_match_ids(self, puuid, routing, start=0, count=100):
+    async def get_arena_match_ids(self, puuid, routing, queue, start=0, count=100):
         if self.fail:
             raise RiotAPIError("boom")
-        return ["EUW1_1"] if start == 0 else []
+        return ["EUW1_1"] if (start == 0 and queue == 1700) else []
     async def get_match(self, match_id, routing):
         return {"metadata": {"matchId": match_id}, "info": {"gameEndTimestamp": 1, "participants": [
             {"puuid": "me", "championName": "Aatrox", "subteamPlacement": 1}]}}

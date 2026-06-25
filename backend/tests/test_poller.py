@@ -4,17 +4,21 @@ from app.models import WatchedAccount, Champion, ChecklistEntry, ProcessedMatch
 
 
 class FakeRiot:
-    def __init__(self, ids_pages, matches):
-        self._ids_pages = ids_pages  # list of pages (lists of ids)
-        self._matches = matches      # dict match_id -> match_data
-        self._page = 0
+    def __init__(self, pages_by_queue, matches):
+        # pages_by_queue: dict queue_id -> list of pages (each page a list of ids).
+        # Queues not present return [] immediately. Pages served sequentially per
+        # queue, regardless of the start offset (test helper).
+        self._pages = pages_by_queue
+        self._matches = matches
+        self._idx = {}  # queue -> next page index
 
-    async def get_arena_match_ids(self, puuid, routing, start=0, count=100):
-        # serve pages sequentially regardless of start (test helper)
-        if self._page >= len(self._ids_pages):
+    async def get_arena_match_ids(self, puuid, routing, queue, start=0, count=100):
+        pages = self._pages.get(queue, [])
+        i = self._idx.get(queue, 0)
+        if i >= len(pages):
             return []
-        page = self._ids_pages[self._page]; self._page += 1
-        return page
+        self._idx[queue] = i + 1
+        return pages[i]
 
     async def get_match(self, match_id, routing):
         return self._matches[match_id]
@@ -38,7 +42,7 @@ def _setup(session):
 
 async def test_poll_account_processes_new_match(session):
     acct = _setup(session)
-    riot = FakeRiot([["EUW1_1"]], {"EUW1_1": _win("EUW1_1", "me", "Aatrox")})
+    riot = FakeRiot({1700: [["EUW1_1"]]}, {"EUW1_1": _win("EUW1_1", "me", "Aatrox")})
     newly = await poll_account(session, riot, acct.id)
     assert newly == 1
     entry = session.exec(select(ChecklistEntry)).first()
@@ -49,7 +53,7 @@ async def test_poll_account_processes_new_match(session):
 
 async def test_run_backfill_paginates_then_marks_done(session):
     acct = _setup(session)
-    riot = FakeRiot([["EUW1_1"], []], {"EUW1_1": _win("EUW1_1", "me", "Aatrox")})
+    riot = FakeRiot({1700: [["EUW1_1"], []]}, {"EUW1_1": _win("EUW1_1", "me", "Aatrox")})
     total = await run_backfill(session, riot, acct.id, page_size=100)
     assert total == 1
     session.refresh(acct)
@@ -57,9 +61,20 @@ async def test_run_backfill_paginates_then_marks_done(session):
     assert len(session.exec(select(ProcessedMatch)).all()) == 1
 
 
+async def test_backfill_scans_current_arena_queue_1750(session):
+    # Regression: Arena moved from queue 1700 to 1750. A win that only exists
+    # under queue 1750 must still be found.
+    acct = _setup(session)
+    riot = FakeRiot({1750: [["TR1_2"]]}, {"TR1_2": _win("TR1_2", "me", "Aatrox")})
+    total = await run_backfill(session, riot, acct.id)
+    assert total == 1
+    entry = session.exec(select(ChecklistEntry)).first()
+    assert entry.completed is True
+
+
 async def test_backfill_empty_history_marks_done(session):
     acct = _setup(session)
-    riot = FakeRiot([[]], {})
+    riot = FakeRiot({}, {})
     total = await run_backfill(session, riot, acct.id)
     assert total == 0
     session.refresh(acct)

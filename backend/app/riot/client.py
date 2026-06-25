@@ -2,6 +2,11 @@ import asyncio
 
 import httpx
 
+# Arena (gameMode CHERRY) queue IDs. Riot changed the Arena queue id over time:
+# 1700 = legacy Arena, 1750 = current Arena (in use from ~mid-2026). Both must be
+# scanned so historical AND current Arena matches are tracked.
+ARENA_QUEUE_IDS = (1700, 1750)
+
 
 class RiotAPIError(Exception):
     pass
@@ -52,13 +57,13 @@ class RiotClient:
         return data["puuid"]
 
     async def get_arena_match_ids(
-        self, puuid: str, routing: str, start: int = 0, count: int = 100
+        self, puuid: str, routing: str, queue: int, start: int = 0, count: int = 100
     ) -> list[str]:
         url = (
             f"https://{routing}.api.riotgames.com"
             f"/lol/match/v5/matches/by-puuid/{puuid}/ids"
         )
-        return await self._get(url, params={"queue": 1700, "start": start, "count": count})
+        return await self._get(url, params={"queue": queue, "start": start, "count": count})
 
     async def get_match(self, match_id: str, routing: str) -> dict:
         url = f"https://{routing}.api.riotgames.com/lol/match/v5/matches/{match_id}"

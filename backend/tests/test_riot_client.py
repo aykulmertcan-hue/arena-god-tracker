@@ -37,13 +37,13 @@ async def test_403_raises_invalid_api_key():
 
 
 @respx.mock
-async def test_arena_match_ids_passes_queue_1700():
+async def test_arena_match_ids_passes_queue():
     route = respx.get(url__regex=r".*/matches/by-puuid/PUUID123/ids.*").mock(
         return_value=httpx.Response(200, json=["EUW1_1", "EUW1_2"])
     )
-    ids = await make_client().get_arena_match_ids("PUUID123", "europe", start=0, count=20)
+    ids = await make_client().get_arena_match_ids("PUUID123", "europe", queue=1750, start=0, count=20)
     assert ids == ["EUW1_1", "EUW1_2"]
-    assert route.calls.last.request.url.params["queue"] == "1700"
+    assert route.calls.last.request.url.params["queue"] == "1750"
 
 
 @respx.mock
