@@ -1,0 +1,37 @@
+name: Build Windows
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "overlay/**"
+      - ".github/workflows/build-windows.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: overlay
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run build
+      - run: npx electron-builder --win --publish never
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Arena God Overlay (latest)
+          body: |
+            Windows build. Download **ArenaGodOverlay-portable.exe**, double-click,
+            paste your own Riot dev key, open League, press Yenile.
+            (Unsigned — SmartScreen: More info → Run anyway.)
+          files: overlay/dist/*.exe
+          fail_on_unmatched_files: true
