@@ -9,6 +9,8 @@ export default function App() {
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [keyInput, setKeyInput] = useState("");
   const [showDone, setShowDone] = useState(false);
+  const [query, setQuery] = useState("");
+  const [editKey, setEditKey] = useState(false);
 
   useEffect(() => {
     window.overlay.getStatus().then(setStatus);
@@ -17,28 +19,47 @@ export default function App() {
     window.overlay.onChecklist(setChecklist);
   }, []);
 
-  const needed = useMemo(
-    () => checklist?.champions.filter((c) => !c.completed) ?? [],
-    [checklist],
-  );
-  const done = useMemo(
-    () => checklist?.champions.filter((c) => c.completed) ?? [],
-    [checklist],
-  );
-  const shown = showDone ? done : needed;
+  const needed = useMemo(() => checklist?.champions.filter((c) => !c.completed) ?? [], [checklist]);
+  const done = useMemo(() => checklist?.champions.filter((c) => c.completed) ?? [], [checklist]);
+  const base = showDone ? done : needed;
+  const q = query.trim().toLowerCase();
+  const shown = q ? base.filter((c) => c.name.toLowerCase().includes(q)) : base;
 
-  if (status && !status.hasKey) {
+  // Key entry shown when no key yet OR when the user reopens it (e.g. expired key).
+  const needKey = status && (!status.hasKey || editKey);
+
+  if (needKey) {
     return (
       <div className="app key-setup">
-        <h2>Arena God Overlay</h2>
-        <p>Riot dev key gir (developer.riotgames.com — 24 saatte yenilenir):</p>
+        <div className="key-head drag">
+          <span>Riot Dev Key</span>
+          <button className="close no-drag" onClick={() => window.overlay.hide()}>
+            ×
+          </button>
+        </div>
+        <p>developer.riotgames.com'dan al — 24 saatte bir yenilenir.</p>
         <input
           placeholder="RGAPI-..."
           value={keyInput}
           onChange={(e) => setKeyInput(e.target.value)}
+          autoFocus
         />
-        <button onClick={() => window.overlay.setKey(keyInput)}>Kaydet</button>
-        {status.lastError && <p className="error">{status.lastError}</p>}
+        <div className="key-actions">
+          <button
+            className="primary"
+            disabled={!keyInput.trim()}
+            onClick={async () => {
+              await window.overlay.setKey(keyInput);
+              setEditKey(false);
+            }}
+          >
+            Kaydet
+          </button>
+          {status?.hasKey && (
+            <button onClick={() => setEditKey(false)}>İptal</button>
+          )}
+        </div>
+        {status?.lastError && <p className="error">{status.lastError}</p>}
       </div>
     );
   }
@@ -57,6 +78,16 @@ export default function App() {
             onClick={() => window.overlay.triggerScan()}
           >
             {status?.scanning ? "⟳ Taranıyor…" : "⟳ Yenile"}
+          </button>
+          <button
+            className="iconbtn"
+            title="Riot key'i değiştir"
+            onClick={() => {
+              setKeyInput("");
+              setEditKey(true);
+            }}
+          >
+            🔑
           </button>
           <button className="close" onClick={() => window.overlay.hide()}>
             ×
@@ -92,20 +123,28 @@ export default function App() {
         </button>
       </div>
 
+      <input
+        className="search no-drag"
+        placeholder="Şampiyon ara…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
       {checklist && checklist.total === 0 ? (
         <div className="empty no-drag">
           Henüz tarama yok. <b>Yenile</b>'ye basınca ilk taramayı (tüm Arena geçmişin)
           yapar; sonraki her basışta yalnızca son taramadan beri oynadığın maçları tarar.
         </div>
       ) : (
-      <div className="grid no-drag">
-        {shown.map((c) => (
-          <div key={c.key} className={`champ ${c.completed ? "done" : "todo"}`} title={c.name}>
-            <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
-            <span>{c.name}</span>
-          </div>
-        ))}
-      </div>
+        <div className="grid no-drag">
+          {shown.length === 0 && <div className="empty">Eşleşen şampiyon yok.</div>}
+          {shown.map((c) => (
+            <div key={c.key} className={`champ ${c.completed ? "done" : "todo"}`} title={c.name}>
+              <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
+              <span>{c.name}</span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

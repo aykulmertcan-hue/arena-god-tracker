@@ -52,6 +52,27 @@ header .close { background: none; border: none; color: #8b90a0; font-size: 18px;
 .champ.done { opacity: 0.4; filter: grayscale(1); }
 .champ img { width: 100%; border-radius: 6px; display: block; }
 .champ span { display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.key-setup { padding: 16px; gap: 10px; }
-.key-setup input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #2a2e38; background: #161922; color: inherit; }
-.key-setup button { padding: 8px 14px; border-radius: 6px; border: none; background: #c89b3c; color: #1a1408; font-weight: 600; cursor: pointer; }
+header .iconbtn { background: none; border: none; color: #b9bdc9; font-size: 14px; cursor: pointer; padding: 2px 4px; }
+.search {
+  margin: 6px 12px 0; padding: 6px 9px; font-size: 12px;
+  border-radius: 6px; border: 1px solid #2a2e38; background: #161922; color: inherit;
+}
+.search::placeholder { color: #6b7080; }
+.key-setup { padding: 0; }
+.key-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: #161922; border-bottom: 1px solid #2a2e38; font-weight: 600;
+}
+.key-setup p { padding: 0 16px; margin: 12px 0 0; font-size: 13px; color: #b9bdc9; line-height: 1.5; }
+.key-setup input {
+  margin: 10px 16px 0; width: calc(100% - 32px); padding: 8px;
+  border-radius: 6px; border: 1px solid #2a2e38; background: #161922; color: inherit;
+}
+.key-actions { display: flex; gap: 8px; padding: 12px 16px; }
+.key-actions button {
+  padding: 8px 14px; border-radius: 6px; border: 1px solid #2a2e38;
+  background: #161922; color: #e8eaed; cursor: pointer;
+}
+.key-actions .primary { background: #c89b3c; color: #1a1408; border: none; font-weight: 600; }
+.key-actions .primary:disabled { background: #3a3e48; color: #8b90a0; cursor: default; }
+.key-setup .error { padding: 0 16px; }
