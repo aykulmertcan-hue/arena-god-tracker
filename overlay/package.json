@@ -37,8 +37,14 @@
   "build": {
     "appId": "com.mertcan.arenagodoverlay",
     "productName": "Arena God Overlay",
+    "asar": true,
     "files": ["out/**/*", "package.json"],
     "mac": { "target": "dmg" },
-    "win": { "target": "nsis" }
+    "win": {
+      "target": ["portable", "nsis"],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "portable": { "artifactName": "ArenaGodOverlay-portable.exe" },
+    "nsis": { "oneClick": true, "perMachine": false }
   }
 }
