@@ -5,3 +5,5 @@ dist/
 .DS_Store
 scan-store.json
 *-store.json
+
+preview-data.json

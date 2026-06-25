@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arena God Overlay — Preview</title>
+    <style>
+      body {
+        margin: 0; height: 100vh;
+        background: radial-gradient(circle at 30% 20%, #20242e, #0a0c10);
+        display: flex; align-items: center; justify-content: center; gap: 24px;
+        font-family: system-ui, sans-serif; color: #8b90a0;
+      }
+      #frame { width: 360px; height: 560px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+      #frame #root { height: 100%; }
+      .note { max-width: 240px; font-size: 13px; line-height: 1.5; }
+      .note b { color: #c89b3c; }
+    </style>
+  </head>
+  <body>
+    <div id="frame"><div id="root"></div></div>
+    <div class="note">
+      <p><b>Önizleme</b> — gerçek tarama verinle.</p>
+      <p>League içinde Arena şampiyon seçimine girince bu pencere ekranın üstünde böyle görünür. "Eksik" sekmesi henüz 1.'lik almadığın şampiyonları gösterir.</p>
+    </div>
+    <script type="module" src="/preview.tsx"></script>
+  </body>
+</html>
