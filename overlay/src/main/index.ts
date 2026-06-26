@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { join } from "node:path";
 
 import { Store, seasonStartMs } from "./core/store.js";
@@ -125,6 +125,10 @@ function registerIpc(): void {
   });
   ipcMain.handle("window:hide", () => {
     if (!ALWAYS_SHOW) win?.hide();
+    return true;
+  });
+  ipcMain.handle("open:external", (_e, url: string) => {
+    void shell.openExternal(url);
     return true;
   });
 }

@@ -26,6 +26,7 @@ export interface OverlayApi {
   setKey: (key: string) => Promise<boolean>;
   triggerScan: () => Promise<boolean>;
   hide: () => Promise<boolean>;
+  openExternal: (url: string) => Promise<boolean>;
   onChecklist: (cb: (data: Checklist) => void) => void;
   onStatus: (cb: (data: Status) => void) => void;
 }

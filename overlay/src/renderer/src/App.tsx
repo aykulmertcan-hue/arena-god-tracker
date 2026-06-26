@@ -37,7 +37,16 @@ export default function App() {
             ×
           </button>
         </div>
-        <p>developer.riotgames.com'dan al — 24 saatte bir yenilenir.</p>
+        <p>
+          <a
+            className="link"
+            onClick={() => window.overlay.openExternal("https://developer.riotgames.com/")}
+          >
+            🔗 Riot dev key al / yenile (developer.riotgames.com)
+          </a>
+          <br />
+          Giriş yap → "DEVELOPMENT API KEY" → Regenerate. 24 saatte bir yenilenir.
+        </p>
         <input
           placeholder="RGAPI-..."
           value={keyInput}
