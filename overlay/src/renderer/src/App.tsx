@@ -4,6 +4,13 @@ import type { Checklist, Status } from "./types.js";
 const CDN = "https://ddragon.leagueoflegends.com/cdn";
 const portrait = (v: string | null, img: string) => `${CDN}/${v}/img/champion/${img}`;
 
+// Riot-required attribution (developer.riotgames.com/policies/general).
+const DISCLAIMER =
+  "Arena God Overlay isn't endorsed by Riot Games and doesn't reflect the views or " +
+  "opinions of Riot Games or anyone officially involved in producing or managing Riot " +
+  "Games properties. Riot Games, and all associated properties are trademarks or " +
+  "registered trademarks of Riot Games, Inc.";
+
 export default function App() {
   const [status, setStatus] = useState<Status | null>(null);
   const [checklist, setChecklist] = useState<Checklist | null>(null);
@@ -69,6 +76,7 @@ export default function App() {
           )}
         </div>
         {status?.lastError && <p className="error">{status.lastError}</p>}
+        <footer className="disclaimer">{DISCLAIMER}</footer>
       </div>
     );
   }
@@ -155,6 +163,7 @@ export default function App() {
           ))}
         </div>
       )}
+      <footer className="disclaimer no-drag">{DISCLAIMER}</footer>
     </div>
   );
 }

@@ -72,3 +72,12 @@ npm run package   # electron-builder -> dmg (Mac) / nsis (Windows)
   are not permitted to use LCU-based apps. Overlays must be Vanguard-compatible.
 - Distribution to friends without per-user dev keys needs a hosted backend +
   production key (future phase).
+- **Korea:** Riot does not permit LCU-based apps for KR-region players. KR users
+  should not run the LCU auto-detect; a manual fallback is the only allowed path.
+
+## Legal
+
+Arena God Overlay isn't endorsed by Riot Games and doesn't reflect the views or
+opinions of Riot Games or anyone officially involved in producing or managing Riot
+Games properties. Riot Games, and all associated properties are trademarks or
+registered trademarks of Riot Games, Inc.

@@ -77,3 +77,4 @@ header .iconbtn { background: none; border: none; color: #b9bdc9; font-size: 14p
 .key-actions .primary:disabled { background: #3a3e48; color: #8b90a0; cursor: default; }
 .key-setup .error { padding: 0 16px; }
 .link { color: #6fc3ff; cursor: pointer; text-decoration: underline; }
+.disclaimer { font-size: 9px; color: #565b66; line-height: 1.35; padding: 6px 12px; border-top: 1px solid #1d212b; }
