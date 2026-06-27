@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { rmSync } from "node:fs";
 import { Store, seasonStartMs } from "../src/main/core/store.js";
-import { extractResult, scanAccount, buildChecklist, wonChampionIds } from "../src/main/core/scanner.js";
+import { extractResult, scanAccount, buildChecklist } from "../src/main/core/scanner.js";
 import type { MatchDto } from "../src/main/riot/client.js";
 
 function win(mid: string, puuid: string, champ: string, place = 1, ts = 1, queueId = 1700): MatchDto {
@@ -85,33 +85,39 @@ describe("scanAccount", () => {
   });
 });
 
-describe("buildChecklist + season filter", () => {
-  it("counts only in-season wins; matches by champion id", () => {
+describe("buildChecklist — Season Journey Fame model", () => {
+  it("maps best placement to state + Fame per champion", () => {
     const store = newStore();
-    store.putMatch("A", { champ: "Aatrox", place: 1, ts: 2000 }); // in season
-    store.putMatch("Z", { champ: "Zac", place: 1, ts: 500 }); // pre season
-    store.putMatch("W", { champ: "MonkeyKing", place: 2, ts: 3000 }); // not 1st
+    store.putMatch("A", { champ: "Aatrox", place: 1, ts: 2000 }); // 1st -> first, 400
+    store.putMatch("W", { champ: "MonkeyKing", place: 3, ts: 2000 }); // top4 -> won, 200
+    store.putMatch("Z", { champ: "Zac", place: 6, ts: 2000 }); // played -> 50
 
-    const all = buildChecklist(store, null);
-    expect(all.completed).toBe(2);
-
-    const seas = buildChecklist(store, 1000);
-    expect(seas.completed).toBe(1);
-    const aatrox = seas.champions.find((c) => c.name === "Aatrox")!;
-    const zac = seas.champions.find((c) => c.name === "Zac")!;
-    const wukong = seas.champions.find((c) => c.name === "Wukong")!;
-    expect(aatrox.completed).toBe(true);
-    expect(zac.completed).toBe(false);
-    expect(wukong.completed).toBe(false);
-    // sorted by display name
-    expect(seas.champions.map((c) => c.name)).toEqual(["Aatrox", "Wukong", "Zac"]);
+    const v = buildChecklist(store, 1000);
+    const a = v.champions.find((c) => c.name === "Aatrox")!;
+    const w = v.champions.find((c) => c.name === "Wukong")!;
+    const z = v.champions.find((c) => c.name === "Zac")!;
+    expect([a.state, a.earned, a.remaining, a.completed]).toEqual(["first", 400, 0, true]);
+    expect([w.state, w.earned, w.remaining]).toEqual(["won", 200, 200]);
+    expect([z.state, z.earned, z.remaining]).toEqual(["played", 50, 350]);
+    expect(v.completed).toBe(1); // only Aatrox maxed
+    expect(v.totalFame).toBe(400 + 200 + 50);
+    expect(v.maxFame).toBe(3 * 400);
   });
 
-  it("wonChampionIds respects season boundary", () => {
+  it("uses the best (lowest) placement across a champion's matches", () => {
     const store = newStore();
-    store.putMatch("A", { champ: "Aatrox", place: 1, ts: 2000 });
-    expect(wonChampionIds(store, 3000).size).toBe(0);
-    expect(wonChampionIds(store, 1000).size).toBe(1);
+    store.putMatch("A1", { champ: "Aatrox", place: 5, ts: 2000 });
+    store.putMatch("A2", { champ: "Aatrox", place: 2, ts: 2100 }); // better
+    const a = buildChecklist(store, 1000).champions.find((c) => c.name === "Aatrox")!;
+    expect(a.state).toBe("won");
+  });
+
+  it("season filter excludes pre-season matches", () => {
+    const store = newStore();
+    store.putMatch("Z", { champ: "Zac", place: 1, ts: 500 }); // pre-season
+    const z = buildChecklist(store, 1000).champions.find((c) => c.name === "Zac")!;
+    expect(z.state).toBe("none");
+    expect(z.earned).toBe(0);
   });
 });
 

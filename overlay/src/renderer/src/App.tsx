@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { Checklist, Status } from "./types.js";
+import type { Checklist, ChecklistChampion, JourneyState, Status } from "./types.js";
 
 const CDN = "https://ddragon.leagueoflegends.com/cdn";
 const portrait = (v: string | null, img: string) => `${CDN}/${v}/img/champion/${img}`;
@@ -11,11 +11,29 @@ const DISCLAIMER =
   "Games properties. Riot Games, and all associated properties are trademarks or " +
   "registered trademarks of Riot Games, Inc.";
 
+type Filter = "all" | "notplayed" | "notwon" | "not1st";
+
+const FILTERS: { id: Filter; label: string; pred: (c: ChecklistChampion) => boolean }[] = [
+  { id: "all", label: "Tümü", pred: () => true },
+  { id: "notplayed", label: "Oynamadıklarım", pred: (c) => c.state === "none" },
+  { id: "notwon", label: "Kazanmadıklarım", pred: (c) => c.state === "none" || c.state === "played" },
+  { id: "not1st", label: "1. olmadıklarım", pred: (c) => c.state !== "first" },
+];
+
+// 3 milestone segments per champion: played / won / 1st.
+function segments(state: JourneyState): boolean[] {
+  return [
+    state === "played" || state === "won" || state === "first", // played
+    state === "won" || state === "first", // won (top 4)
+    state === "first", // 1st
+  ];
+}
+
 export default function App() {
   const [status, setStatus] = useState<Status | null>(null);
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [keyInput, setKeyInput] = useState("");
-  const [showDone, setShowDone] = useState(false);
+  const [filter, setFilter] = useState<Filter>("not1st");
   const [query, setQuery] = useState("");
   const [editKey, setEditKey] = useState(false);
 
@@ -26,16 +44,22 @@ export default function App() {
     window.overlay.onChecklist(setChecklist);
   }, []);
 
-  const needed = useMemo(() => checklist?.champions.filter((c) => !c.completed) ?? [], [checklist]);
-  const done = useMemo(() => checklist?.champions.filter((c) => c.completed) ?? [], [checklist]);
-  const base = showDone ? done : needed;
-  const q = query.trim().toLowerCase();
-  const shown = q ? base.filter((c) => c.name.toLowerCase().includes(q)) : base;
+  const champs = checklist?.champions ?? [];
+  const counts = useMemo(
+    () => Object.fromEntries(FILTERS.map((f) => [f.id, champs.filter(f.pred).length])),
+    [champs],
+  );
 
-  // Key entry shown when no key yet OR when the user reopens it (e.g. expired key).
-  const needKey = status && (!status.hasKey || editKey);
+  const shown = useMemo(() => {
+    const pred = FILTERS.find((f) => f.id === filter)!.pred;
+    const q = query.trim().toLowerCase();
+    return champs
+      .filter(pred)
+      .filter((c) => !q || c.name.toLowerCase().includes(q))
+      .sort((a, b) => b.remaining - a.remaining || a.name.localeCompare(b.name));
+  }, [champs, filter, query]);
 
-  if (needKey) {
+  if (status && (!status.hasKey || editKey)) {
     return (
       <div className="app key-setup">
         <div className="key-head drag">
@@ -71,9 +95,7 @@ export default function App() {
           >
             Kaydet
           </button>
-          {status?.hasKey && (
-            <button onClick={() => setEditKey(false)}>İptal</button>
-          )}
+          {status?.hasKey && <button onClick={() => setEditKey(false)}>İptal</button>}
         </div>
         {status?.lastError && <p className="error">{status.lastError}</p>}
         <footer className="disclaimer">{DISCLAIMER}</footer>
@@ -81,17 +103,19 @@ export default function App() {
     );
   }
 
+  const pct = checklist?.maxFame ? (checklist.totalFame / checklist.maxFame) * 100 : 0;
+
   return (
     <div className="app">
       <header className="drag">
         <div className="title">
-          Arena God {status?.account ? `· ${status.account.gameName}#${status.account.tagLine}` : ""}
+          Season Journey {status?.account ? `· ${status.account.gameName}#${status.account.tagLine}` : ""}
         </div>
         <div className="actions no-drag">
           <button
             className="refresh"
             disabled={status?.scanning}
-            title="Son taramadan beri oynanan maçları tara ve 1.'likleri güncelle"
+            title="Son taramadan beri oynanan maçları tara ve Fame'i güncelle"
             onClick={() => window.overlay.triggerScan()}
           >
             {status?.scanning ? "⟳ Taranıyor…" : "⟳ Yenile"}
@@ -115,13 +139,11 @@ export default function App() {
       <div className="progress no-drag">
         {checklist ? (
           <>
-            <strong>{checklist.completed}/{checklist.total}</strong> bu sezon ·{" "}
-            <span className="needcount">{needed.length} eksik</span>
+            <strong>{checklist.totalFame.toLocaleString()}</strong> /{" "}
+            {checklist.maxFame.toLocaleString()} Fame ·{" "}
+            <span className="needcount">{checklist.completed}/{checklist.total} şampiyon 1.</span>
             <div className="bar">
-              <div
-                className="fill"
-                style={{ width: `${checklist.total ? (checklist.completed / checklist.total) * 100 : 0}%` }}
-              />
+              <div className="fill" style={{ width: `${pct}%` }} />
             </div>
           </>
         ) : (
@@ -131,13 +153,12 @@ export default function App() {
         {status?.lastError && <div className="error">{status.lastError}</div>}
       </div>
 
-      <div className="tabs no-drag">
-        <button className={!showDone ? "on" : ""} onClick={() => setShowDone(false)}>
-          Eksik ({needed.length})
-        </button>
-        <button className={showDone ? "on" : ""} onClick={() => setShowDone(true)}>
-          Tamam ({done.length})
-        </button>
+      <div className="filters no-drag">
+        {FILTERS.map((f) => (
+          <button key={f.id} className={filter === f.id ? "on" : ""} onClick={() => setFilter(f.id)}>
+            {f.label} ({counts[f.id]})
+          </button>
+        ))}
       </div>
 
       <input
@@ -150,17 +171,25 @@ export default function App() {
       {checklist && checklist.total === 0 ? (
         <div className="empty no-drag">
           Henüz tarama yok. <b>Yenile</b>'ye basınca ilk taramayı (tüm Arena geçmişin)
-          yapar; sonraki her basışta yalnızca son taramadan beri oynadığın maçları tarar.
+          yapar; sonraki her basışta yalnızca yeni maçları tarar.
         </div>
       ) : (
         <div className="grid no-drag">
           {shown.length === 0 && <div className="empty">Eşleşen şampiyon yok.</div>}
-          {shown.map((c) => (
-            <div key={c.key} className={`champ ${c.completed ? "done" : "todo"}`} title={c.name}>
-              <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
-              <span>{c.name}</span>
-            </div>
-          ))}
+          {shown.map((c) => {
+            const seg = segments(c.state);
+            return (
+              <div key={c.key} className={`champ ${c.completed ? "done" : ""}`} title={`${c.name} · ${c.remaining} Fame kaldı`}>
+                <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
+                <span>{c.name}</span>
+                <div className="segs" title="oyna · kazan · 1.">
+                  <i className={`seg p ${seg[0] ? "on" : ""}`} />
+                  <i className={`seg w ${seg[1] ? "on" : ""}`} />
+                  <i className={`seg f ${seg[2] ? "on" : ""}`} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       <footer className="disclaimer no-drag">{DISCLAIMER}</footer>

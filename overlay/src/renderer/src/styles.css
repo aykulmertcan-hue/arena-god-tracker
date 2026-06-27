@@ -43,15 +43,25 @@ header .close { background: none; border: none; color: #8b90a0; font-size: 18px;
   background: #161922; color: #b9bdc9; border: 1px solid #2a2e38; border-radius: 6px;
 }
 .tabs button.on { background: #2a2e38; color: #fff; }
+.filters { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 12px 0; }
+.filters button {
+  flex: 1 1 auto; padding: 4px 6px; font-size: 11px; cursor: pointer; white-space: nowrap;
+  background: #161922; color: #b9bdc9; border: 1px solid #2a2e38; border-radius: 6px;
+}
+.filters button.on { background: #c89b3c; color: #1a1408; border-color: #c89b3c; font-weight: 600; }
 .grid {
   flex: 1; overflow-y: auto; padding: 10px 12px;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px;
 }
 .champ { text-align: center; font-size: 10px; }
-.champ.todo { opacity: 1; }
-.champ.done { opacity: 0.4; filter: grayscale(1); }
+.champ.done { opacity: 0.55; }
 .champ img { width: 100%; border-radius: 6px; display: block; }
 .champ span { display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.segs { display: flex; gap: 2px; margin-top: 3px; }
+.segs .seg { flex: 1; height: 4px; border-radius: 2px; background: #2a2e38; }
+.segs .seg.p.on { background: #c08a3e; }
+.segs .seg.w.on { background: #b9c2cc; }
+.segs .seg.f.on { background: #f0c040; }
 header .iconbtn { background: none; border: none; color: #b9bdc9; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 .search {
   margin: 6px 12px 0; padding: 6px 9px; font-size: 12px;

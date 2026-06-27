@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arena God Overlay — League üstünde önizleme</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; }
+      /* Faux Arena champ-select backdrop */
+      .bg {
+        position: fixed; inset: 0;
+        background:
+          linear-gradient(180deg, rgba(7,10,18,.65), rgba(7,10,18,.9)),
+          url("https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg") center/cover;
+        filter: saturate(1.05);
+      }
+      .cs-header {
+        position: fixed; top: 28px; left: 0; right: 0; text-align: center; color: #f0e6d2;
+        text-shadow: 0 2px 12px #000; pointer-events: none;
+      }
+      .cs-header .mode { letter-spacing: 6px; color: #c8aa6e; font-size: 13px; }
+      .cs-header .pick { font-size: 30px; font-weight: 700; margin-top: 6px; }
+      .cs-header .timer { margin-top: 8px; color: #cdd2dc; font-size: 14px; }
+      /* faux bottom champion bar */
+      .cs-bar {
+        position: fixed; bottom: 0; left: 0; right: 0; height: 96px;
+        background: linear-gradient(0deg, rgba(0,0,0,.85), transparent);
+        display: flex; gap: 8px; align-items: flex-end; justify-content: center; padding: 0 0 14px;
+      }
+      .cs-bar img { width: 56px; height: 56px; border-radius: 8px; opacity: .8; border: 1px solid #3a2f18; }
+      /* the actual overlay window, floating top-right like over the client */
+      #overlay-root {
+        position: fixed; top: 26px; right: 26px; width: 360px; height: 600px;
+        box-shadow: 0 24px 70px rgba(0,0,0,.7);
+      }
+      .label {
+        position: fixed; bottom: 110px; right: 30px; color: #c8aa6e; font-size: 12px;
+        background: rgba(0,0,0,.5); padding: 4px 8px; border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg"></div>
+    <div class="cs-header">
+      <div class="mode">A R E N A</div>
+      <div class="pick">Şampiyonunu Seç</div>
+      <div class="timer">0:24</div>
+    </div>
+    <div class="cs-bar" id="bar"></div>
+    <div class="label">↑ overlay (gerçek verin) — League'in üstünde böyle durur</div>
+    <div id="overlay-root"></div>
+    <script type="module" src="/champ-select-demo.tsx"></script>
+  </body>
+</html>
