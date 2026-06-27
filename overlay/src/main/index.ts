@@ -14,6 +14,7 @@ let win: BrowserWindow | null = null;
 let store: Store;
 let scanning = false;
 let lastError: string | null = null;
+let autoScanned = false; // background scan done for the current LoL session
 const ALWAYS_SHOW = process.env["OVERLAY_ALWAYS_SHOW"] === "1";
 
 function client(): RiotClient | null {
@@ -83,8 +84,15 @@ async function onLcuChange(state: LcuState): Promise<void> {
       };
       store.save();
       pushStatus();
-      // No automatic scan — the user scans manually via Refresh.
     }
+    // Work in the background as soon as LoL is detected (before Arena): scan
+    // once per LoL session. First time -> full backfill, else incremental.
+    if (!autoScanned && store.data.account && client()) {
+      autoScanned = true;
+      void runScan(Object.keys(store.data.processedMatches).length === 0);
+    }
+  } else if (!state.connected) {
+    autoScanned = false; // LoL closed -> rescan when it reopens
   }
 
   // Show overlay only during Arena champ select. No automatic scan here —
@@ -124,6 +132,11 @@ function registerIpc(): void {
       const ok = await c.validateKey(platform);
       lastError = ok ? null : "Riot API key is invalid or expired";
       pushStatus();
+      // Key just verified — if LoL is already open, start scanning now.
+      if (ok && store.data.account) {
+        autoScanned = true;
+        void runScan(Object.keys(store.data.processedMatches).length === 0);
+      }
       return { ok, error: ok ? undefined : lastError };
     } catch (e) {
       lastError = String(e);
