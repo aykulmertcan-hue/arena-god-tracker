@@ -55,10 +55,11 @@ header .close { background: none; border: none; color: var(--muted); font-size: 
 header .close:hover { color: var(--gold); }
 
 .progress { padding: 10px 12px; font-size: 13px; color: var(--muted); }
-.firstcount { font-family: Georgia, serif; font-size: 16px; color: var(--gold-lt); }
-.firstcount .tick { color: var(--gold); text-shadow: 0 0 6px rgba(200,170,110,.6); }
-.firstcount strong { color: var(--gold); font-size: 18px; }
-.progress .sub { color: var(--muted); font-size: 12px; }
+.firstcount { display: inline-flex; align-items: center; gap: 6px; font-family: Georgia, serif; }
+.firstcount .ico { font-size: 15px; line-height: 1; }
+.firstcount .num { font-size: 17px; line-height: 1; color: var(--gold-lt); }
+.firstcount .num strong { font-size: 17px; line-height: 1; color: var(--gold); font-weight: 700; }
+.firstcount .sub { color: var(--muted); font-size: 11px; line-height: 1; }
 .bar { height: 4px; background: #0a131c; border: 1px solid var(--line); border-radius: 0; margin-top: 8px; overflow: hidden; }
 .fill { height: 100%; background: linear-gradient(90deg, var(--teal-dk), var(--teal)); box-shadow: 0 0 8px rgba(10,200,185,.5); }
 .scanning { color: var(--teal); font-size: 11px; margin-top: 4px; }
@@ -89,15 +90,24 @@ header .close:hover { color: var(--gold); }
 .grid::-webkit-scrollbar { width: 8px; }
 .grid::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
 .champ { text-align: center; font-size: 10px; color: var(--muted); }
-.champ.done { opacity: 0.5; }
-.champ img { width: 100%; border-radius: 2px; display: block; border: 1px solid var(--line); }
-.champ.done img { border-color: var(--gold); }
+.champ.done { opacity: 0.72; }
+.thumb { position: relative; }
+.thumb img { width: 100%; border-radius: 2px; display: block; border: 1px solid var(--line); }
+.champ.done .thumb img { border-color: var(--gold); box-shadow: 0 0 6px rgba(200,170,110,.5); }
+.check {
+  position: absolute; top: 2px; right: 2px; width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #1a1206;
+  background: linear-gradient(180deg, #f0d27a, #c8aa6e);
+  border: 1px solid #f0e6d2; border-radius: 50%;
+  box-shadow: 0 0 6px rgba(200,170,110,.85);
+}
 .champ span { display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .segs { display: flex; gap: 2px; margin-top: 3px; }
 .segs .seg { flex: 1; height: 4px; border-radius: 1px; background: #1a2630; }
-.segs .seg.on.bronze { background: #c08a3e; }
-.segs .seg.on.silver { background: #cdd2dc; }
-.segs .seg.on.gold { background: #f0c040; box-shadow: 0 0 5px rgba(240,192,64,.6); }
+.segs .seg.on.bronze { background: #a86a2e; }
+.segs .seg.on.silver { background: #d2d8e2; }
+.segs .seg.on.gold { background: #ffd23f; box-shadow: 0 0 7px rgba(255,210,63,.85); }
 
 .empty { padding: 20px 16px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .empty b { color: var(--gold); }

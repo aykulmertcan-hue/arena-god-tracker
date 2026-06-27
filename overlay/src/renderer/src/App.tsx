@@ -165,10 +165,12 @@ export default function App() {
         {checklist ? (
           <>
             <span className="firstcount">
-              🏆 <span className="tick">✓</span>{" "}
-              <strong>{checklist.completed}</strong>/{checklist.total}
+              <span className="ico">🏆</span>
+              <span className="num">
+                <strong>{checklist.completed}</strong>/{checklist.total}
+              </span>
+              <span className="sub">with 1st place</span>
             </span>
-            <span className="sub"> with 1st place</span>
             <div className="bar">
               <div className="fill" style={{ width: `${pct}%` }} />
             </div>
@@ -207,7 +209,10 @@ export default function App() {
             const { filled, tier } = segInfo(c.state);
             return (
               <div key={c.key} className={`champ ${c.completed ? "done" : ""}`} title={`${c.name} — ${STATE_LABEL[c.state]}`}>
-                <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
+                <div className="thumb">
+                  <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
+                  {c.completed && <span className="check" title="1st place ✓">✓</span>}
+                </div>
                 <span>{c.name}</span>
                 <div className="segs" title="play · win · 1st">
                   {[0, 1, 2].map((i) => (
