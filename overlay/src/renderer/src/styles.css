@@ -90,10 +90,13 @@ header .close:hover { color: var(--gold); }
 .grid::-webkit-scrollbar { width: 8px; }
 .grid::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
 .champ { text-align: center; font-size: 10px; color: var(--muted); }
-.champ.done { opacity: 0.72; }
+.champ.done { opacity: 1; }
 .thumb { position: relative; }
 .thumb img { width: 100%; border-radius: 2px; display: block; border: 1px solid var(--line); }
-.champ.done .thumb img { border-color: var(--gold); box-shadow: 0 0 6px rgba(200,170,110,.5); }
+.champ.done .thumb img {
+  border-color: #ffd76b;
+  box-shadow: 0 0 10px rgba(255,205,80,.9), inset 0 0 0 1px rgba(255,232,170,.55);
+}
 .check {
   position: absolute; top: 2px; right: 2px; width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
