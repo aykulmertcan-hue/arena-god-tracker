@@ -27,13 +27,12 @@ const STATE_LABEL: Record<JourneyState, string> = {
   first: "1st place",
 };
 
-// 3 milestone segments per champion: played / won / 1st.
-function segments(state: JourneyState): boolean[] {
-  return [
-    state === "played" || state === "won" || state === "first", // played
-    state === "won" || state === "first", // won (top 4)
-    state === "first", // 1st
-  ];
+// 3 milestone segments per champion. Color depends on HOW MANY are filled:
+// 1 -> bronze, 2 -> silver, 3 -> gold.
+function segInfo(state: JourneyState): { filled: number; tier: string } {
+  const filled = state === "none" ? 0 : state === "played" ? 1 : state === "won" ? 2 : 3;
+  const tier = filled === 1 ? "bronze" : filled === 2 ? "silver" : filled === 3 ? "gold" : "";
+  return { filled, tier };
 }
 
 export default function App() {
@@ -43,6 +42,8 @@ export default function App() {
   const [filter, setFilter] = useState<Filter>("not1st");
   const [query, setQuery] = useState("");
   const [editKey, setEditKey] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [keyResult, setKeyResult] = useState<"ok" | "bad" | null>(null);
 
   useEffect(() => {
     window.overlay.getStatus().then(setStatus);
@@ -94,17 +95,34 @@ export default function App() {
         <div className="key-actions">
           <button
             className="primary"
-            disabled={!keyInput.trim()}
+            disabled={!keyInput.trim() || checking}
             onClick={async () => {
-              await window.overlay.setKey(keyInput);
-              setEditKey(false);
+              setChecking(true);
+              setKeyResult(null);
+              const res = await window.overlay.setKey(keyInput);
+              setChecking(false);
+              if (res.ok) {
+                setKeyResult("ok");
+                setTimeout(() => {
+                  setEditKey(false);
+                  setKeyResult(null);
+                  window.overlay.hide();
+                }, 1400);
+              } else {
+                setKeyResult("bad");
+              }
             }}
           >
-            Save
+            {checking ? "Checking…" : "Save & verify"}
           </button>
           {status?.hasKey && <button onClick={() => setEditKey(false)}>Cancel</button>}
         </div>
-        {status?.lastError && <p className="error">{status.lastError}</p>}
+        {keyResult === "ok" && (
+          <p className="ok">✓ Key works — opens automatically in Arena champ select.</p>
+        )}
+        {keyResult === "bad" && (
+          <p className="error">{status?.lastError ?? "Invalid key"}</p>
+        )}
         <footer className="disclaimer">{DISCLAIMER}</footer>
       </div>
     );
@@ -186,15 +204,15 @@ export default function App() {
         <div className="grid no-drag">
           {shown.length === 0 && <div className="empty">No matching champions.</div>}
           {shown.map((c) => {
-            const seg = segments(c.state);
+            const { filled, tier } = segInfo(c.state);
             return (
               <div key={c.key} className={`champ ${c.completed ? "done" : ""}`} title={`${c.name} — ${STATE_LABEL[c.state]}`}>
                 <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
                 <span>{c.name}</span>
                 <div className="segs" title="play · win · 1st">
-                  <i className={`seg p ${seg[0] ? "on" : ""}`} />
-                  <i className={`seg w ${seg[1] ? "on" : ""}`} />
-                  <i className={`seg f ${seg[2] ? "on" : ""}`} />
+                  {[0, 1, 2].map((i) => (
+                    <i key={i} className={`seg ${i < filled ? `on ${tier}` : ""}`} />
+                  ))}
                 </div>
               </div>
             );

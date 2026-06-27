@@ -110,11 +110,26 @@ function registerIpc(): void {
     lastScanAt: store.data.lastScanAt,
     lastError,
   }));
-  ipcMain.handle("settings:setKey", (_e, key: string) => {
+  ipcMain.handle("settings:setKey", async (_e, key: string) => {
     store.data.settings.riotApiKey = key.trim();
     store.save();
-    pushStatus();
-    return true; // no automatic scan — user presses Refresh
+    const platform = store.data.account?.platform || "euw1";
+    const c = client();
+    if (!c) {
+      lastError = "No key entered";
+      pushStatus();
+      return { ok: false, error: lastError };
+    }
+    try {
+      const ok = await c.validateKey(platform);
+      lastError = ok ? null : "Riot API key is invalid or expired";
+      pushStatus();
+      return { ok, error: ok ? undefined : lastError };
+    } catch (e) {
+      lastError = String(e);
+      pushStatus();
+      return { ok: false, error: String(e) };
+    }
   });
   ipcMain.handle("scan:trigger", () => {
     // First scan (no data yet) -> full backfill; otherwise incremental

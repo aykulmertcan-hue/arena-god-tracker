@@ -1,5 +1,7 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 import { join } from "node:path";
+
+const WIN_W = 380;
 
 // Transparent, frameless, always-on-top overlay window. Created hidden;
 // the orchestrator shows it during Arena champ select.
@@ -8,9 +10,18 @@ import { join } from "node:path";
 // hook its renderer, read game memory, or automate input — see SAFETY.md.
 // Those would trip Vanguard and risk account bans.
 export function createOverlayWindow(): BrowserWindow {
+  // Spawn on the right side of the primary display (over the client's
+  // opponent panel, which is irrelevant in Arena). Tall by default; fully
+  // resizable so anyone can use any size.
+  const { workArea } = screen.getPrimaryDisplay();
+  const winH = Math.min(920, workArea.height - 100);
   const win = new BrowserWindow({
-    width: 360,
-    height: 560,
+    width: WIN_W,
+    height: winH,
+    x: workArea.x + workArea.width - WIN_W - 20,
+    y: workArea.y + 50,
+    minWidth: 260,
+    minHeight: 300,
     show: false,
     frame: false,
     transparent: true,

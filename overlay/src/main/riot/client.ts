@@ -81,4 +81,16 @@ export class RiotClient {
     const url = `https://${routing}.api.riotgames.com/lol/match/v5/matches/${matchId}`;
     return this.get<MatchDto>(url);
   }
+
+  // Lightweight key check via LoL status (no params). 200 = valid, 401/403 = invalid.
+  async validateKey(platform: string): Promise<boolean> {
+    const url = `https://${platform}.api.riotgames.com/lol/status/v4/platform-data`;
+    try {
+      await this.get(url);
+      return true;
+    } catch (e) {
+      if (e instanceof InvalidApiKey) return false;
+      throw e;
+    }
+  }
 }

@@ -27,7 +27,7 @@ export interface Status {
 export interface OverlayApi {
   getChecklist: () => Promise<Checklist>;
   getStatus: () => Promise<Status>;
-  setKey: (key: string) => Promise<boolean>;
+  setKey: (key: string) => Promise<{ ok: boolean; error?: string }>;
   triggerScan: () => Promise<boolean>;
   hide: () => Promise<boolean>;
   openExternal: (url: string) => Promise<boolean>;
