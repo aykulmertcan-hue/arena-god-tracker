@@ -93,10 +93,8 @@ header .close:hover { color: var(--gold); }
 .champ.done { opacity: 1; }
 .thumb { position: relative; }
 .thumb img { width: 100%; border-radius: 2px; display: block; border: 1px solid var(--line); }
-.champ.done .thumb img {
-  border-color: #ffd76b;
-  box-shadow: 0 0 10px rgba(255,205,80,.9), inset 0 0 0 1px rgba(255,232,170,.55);
-}
+.champ.done .thumb { border-radius: 2px; box-shadow: 0 0 0 1px #ffd76b, 0 0 10px rgba(255,205,80,.9); }
+.champ.done .thumb img { filter: brightness(0.42); border-color: transparent; }
 .check {
   position: absolute; top: 2px; right: 2px; width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
