@@ -14,11 +14,18 @@ const DISCLAIMER =
 type Filter = "all" | "notplayed" | "notwon" | "not1st";
 
 const FILTERS: { id: Filter; label: string; pred: (c: ChecklistChampion) => boolean }[] = [
-  { id: "all", label: "Tümü", pred: () => true },
-  { id: "notplayed", label: "Oynamadıklarım", pred: (c) => c.state === "none" },
-  { id: "notwon", label: "Kazanmadıklarım", pred: (c) => c.state === "none" || c.state === "played" },
-  { id: "not1st", label: "1. olmadıklarım", pred: (c) => c.state !== "first" },
+  { id: "all", label: "All", pred: () => true },
+  { id: "not1st", label: "No First Place", pred: (c) => c.state !== "first" },
+  { id: "notwon", label: "No Win", pred: (c) => c.state === "none" || c.state === "played" },
+  { id: "notplayed", label: "Not Played", pred: (c) => c.state === "none" },
 ];
+
+const STATE_LABEL: Record<JourneyState, string> = {
+  none: "not played",
+  played: "played",
+  won: "won (top 4)",
+  first: "1st place",
+};
 
 // 3 milestone segments per champion: played / won / 1st.
 function segments(state: JourneyState): boolean[] {
@@ -56,7 +63,7 @@ export default function App() {
     return champs
       .filter(pred)
       .filter((c) => !q || c.name.toLowerCase().includes(q))
-      .sort((a, b) => b.remaining - a.remaining || a.name.localeCompare(b.name));
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [champs, filter, query]);
 
   if (status && (!status.hasKey || editKey)) {
@@ -73,10 +80,10 @@ export default function App() {
             className="link"
             onClick={() => window.overlay.openExternal("https://developer.riotgames.com/")}
           >
-            🔗 Riot dev key al / yenile (developer.riotgames.com)
+            🔗 Get / refresh Riot dev key (developer.riotgames.com)
           </a>
           <br />
-          Giriş yap → "DEVELOPMENT API KEY" → Regenerate. 24 saatte bir yenilenir.
+          Sign in → "DEVELOPMENT API KEY" → Regenerate. Expires every 24h.
         </p>
         <input
           placeholder="RGAPI-..."
@@ -93,9 +100,9 @@ export default function App() {
               setEditKey(false);
             }}
           >
-            Kaydet
+            Save
           </button>
-          {status?.hasKey && <button onClick={() => setEditKey(false)}>İptal</button>}
+          {status?.hasKey && <button onClick={() => setEditKey(false)}>Cancel</button>}
         </div>
         {status?.lastError && <p className="error">{status.lastError}</p>}
         <footer className="disclaimer">{DISCLAIMER}</footer>
@@ -103,7 +110,7 @@ export default function App() {
     );
   }
 
-  const pct = checklist?.maxFame ? (checklist.totalFame / checklist.maxFame) * 100 : 0;
+  const pct = checklist?.total ? (checklist.completed / checklist.total) * 100 : 0;
 
   return (
     <div className="app">
@@ -115,14 +122,14 @@ export default function App() {
           <button
             className="refresh"
             disabled={status?.scanning}
-            title="Son taramadan beri oynanan maçları tara ve Fame'i güncelle"
+            title="Scan matches played since the last scan"
             onClick={() => window.overlay.triggerScan()}
           >
-            {status?.scanning ? "⟳ Taranıyor…" : "⟳ Yenile"}
+            {status?.scanning ? "⟳ Scanning…" : "⟳ Refresh"}
           </button>
           <button
             className="iconbtn"
-            title="Riot key'i değiştir"
+            title="Change Riot key"
             onClick={() => {
               setKeyInput("");
               setEditKey(true);
@@ -139,17 +146,19 @@ export default function App() {
       <div className="progress no-drag">
         {checklist ? (
           <>
-            <strong>{checklist.totalFame.toLocaleString()}</strong> /{" "}
-            {checklist.maxFame.toLocaleString()} Fame ·{" "}
-            <span className="needcount">{checklist.completed}/{checklist.total} şampiyon 1.</span>
+            <span className="firstcount">
+              🏆 <span className="tick">✓</span>{" "}
+              <strong>{checklist.completed}</strong>/{checklist.total}
+            </span>
+            <span className="sub"> with 1st place</span>
             <div className="bar">
               <div className="fill" style={{ width: `${pct}%` }} />
             </div>
           </>
         ) : (
-          "Yükleniyor…"
+          "Loading…"
         )}
-        {status?.scanning && <div className="scanning">Taranıyor…</div>}
+        {status?.scanning && <div className="scanning">Scanning…</div>}
         {status?.lastError && <div className="error">{status.lastError}</div>}
       </div>
 
@@ -163,26 +172,26 @@ export default function App() {
 
       <input
         className="search no-drag"
-        placeholder="Şampiyon ara…"
+        placeholder="Search champion…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
 
       {checklist && checklist.total === 0 ? (
         <div className="empty no-drag">
-          Henüz tarama yok. <b>Yenile</b>'ye basınca ilk taramayı (tüm Arena geçmişin)
-          yapar; sonraki her basışta yalnızca yeni maçları tarar.
+          No data yet. Press <b>Refresh</b> to run the first scan (your full Arena
+          history); after that each press only scans new matches.
         </div>
       ) : (
         <div className="grid no-drag">
-          {shown.length === 0 && <div className="empty">Eşleşen şampiyon yok.</div>}
+          {shown.length === 0 && <div className="empty">No matching champions.</div>}
           {shown.map((c) => {
             const seg = segments(c.state);
             return (
-              <div key={c.key} className={`champ ${c.completed ? "done" : ""}`} title={`${c.name} · ${c.remaining} Fame kaldı`}>
+              <div key={c.key} className={`champ ${c.completed ? "done" : ""}`} title={`${c.name} — ${STATE_LABEL[c.state]}`}>
                 <img src={portrait(checklist?.version ?? null, c.image)} alt={c.name} loading="lazy" />
                 <span>{c.name}</span>
-                <div className="segs" title="oyna · kazan · 1.">
+                <div className="segs" title="play · win · 1st">
                   <i className={`seg p ${seg[0] ? "on" : ""}`} />
                   <i className={`seg w ${seg[1] ? "on" : ""}`} />
                   <i className={`seg f ${seg[2] ? "on" : ""}`} />

@@ -85,23 +85,22 @@ describe("scanAccount", () => {
   });
 });
 
-describe("buildChecklist — Season Journey Fame model", () => {
-  it("maps best placement to state + Fame per champion", () => {
+describe("buildChecklist — Season Journey state model", () => {
+  it("maps best placement to milestone state per champion", () => {
     const store = newStore();
-    store.putMatch("A", { champ: "Aatrox", place: 1, ts: 2000 }); // 1st -> first, 400
-    store.putMatch("W", { champ: "MonkeyKing", place: 3, ts: 2000 }); // top4 -> won, 200
-    store.putMatch("Z", { champ: "Zac", place: 6, ts: 2000 }); // played -> 50
+    store.putMatch("A", { champ: "Aatrox", place: 1, ts: 2000 }); // 1st -> first
+    store.putMatch("W", { champ: "MonkeyKing", place: 3, ts: 2000 }); // top4 -> won
+    store.putMatch("Z", { champ: "Zac", place: 6, ts: 2000 }); // played
 
     const v = buildChecklist(store, 1000);
     const a = v.champions.find((c) => c.name === "Aatrox")!;
     const w = v.champions.find((c) => c.name === "Wukong")!;
     const z = v.champions.find((c) => c.name === "Zac")!;
-    expect([a.state, a.earned, a.remaining, a.completed]).toEqual(["first", 400, 0, true]);
-    expect([w.state, w.earned, w.remaining]).toEqual(["won", 200, 200]);
-    expect([z.state, z.earned, z.remaining]).toEqual(["played", 50, 350]);
-    expect(v.completed).toBe(1); // only Aatrox maxed
-    expect(v.totalFame).toBe(400 + 200 + 50);
-    expect(v.maxFame).toBe(3 * 400);
+    expect([a.state, a.completed]).toEqual(["first", true]);
+    expect([w.state, w.completed]).toEqual(["won", false]);
+    expect([z.state, z.completed]).toEqual(["played", false]);
+    expect(v.completed).toBe(1); // champions placed 1st with
+    expect(v.total).toBe(3);
   });
 
   it("uses the best (lowest) placement across a champion's matches", () => {
@@ -117,7 +116,7 @@ describe("buildChecklist — Season Journey Fame model", () => {
     store.putMatch("Z", { champ: "Zac", place: 1, ts: 500 }); // pre-season
     const z = buildChecklist(store, 1000).champions.find((c) => c.name === "Zac")!;
     expect(z.state).toBe("none");
-    expect(z.earned).toBe(0);
+    expect(z.completed).toBe(false);
   });
 });
 

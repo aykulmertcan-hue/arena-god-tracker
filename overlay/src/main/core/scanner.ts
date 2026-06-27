@@ -1,9 +1,7 @@
 import { ARENA_QUEUE_IDS, RiotClient, type MatchDto } from "../riot/client.js";
 import type { Store } from "./store.js";
 
-// Arena Season Journey per-champion Fame milestones (each earned once).
-export const FAME = { PLAY: 50, WIN: 150, FIRST: 200, MAX: 400 } as const;
-
+// Per-champion Arena milestone state (no points/Fame — just status).
 export type JourneyState = "none" | "played" | "won" | "first";
 
 export interface ChecklistChampion {
@@ -13,26 +11,22 @@ export interface ChecklistChampion {
   image: string;
   state: JourneyState; // none | played | won (top4) | first
   bestPlacement: number | null; // best (lowest) subteamPlacement this season
-  earned: number; // Fame earned for this champion's milestones
-  remaining: number; // Fame still gainable for this champion
-  completed: boolean; // true when fully maxed (placed 1st)
+  completed: boolean; // true when placed 1st
 }
 export interface Checklist {
   total: number;
-  completed: number; // champions fully maxed (1st)
-  totalFame: number; // Fame earned across all champions
-  maxFame: number; // total possible (champions * 400)
+  completed: number; // champions placed 1st with
   version: string | null;
   champions: ChecklistChampion[]; // sorted by name
   seasonStartMs: number | null;
 }
 
-// Map best (lowest) placement to milestone state + Fame. In Arena, top 4 = win.
-function fameFor(best: number | null): { state: JourneyState; earned: number; remaining: number } {
-  if (best === null) return { state: "none", earned: 0, remaining: FAME.MAX };
-  if (best === 1) return { state: "first", earned: FAME.MAX, remaining: 0 };
-  if (best <= 4) return { state: "won", earned: FAME.PLAY + FAME.WIN, remaining: FAME.FIRST };
-  return { state: "played", earned: FAME.PLAY, remaining: FAME.WIN + FAME.FIRST };
+// Map best (lowest) placement to milestone state. In Arena, top 4 = win.
+function stateFor(best: number | null): JourneyState {
+  if (best === null) return "none";
+  if (best === 1) return "first";
+  if (best <= 4) return "won";
+  return "played";
 }
 
 // Find our participant's (championName, subteamPlacement).
@@ -109,31 +103,25 @@ export function buildChecklist(store: Store, seasonStartMs: number | null): Chec
   const champs = store.data.champions;
   const best = bestPlacements(store, seasonStartMs);
   let completed = 0;
-  let totalFame = 0;
   const list: ChecklistChampion[] = (champs?.list ?? [])
     .map((c) => {
       const b = c.id in best ? best[c.id] : null;
-      const f = fameFor(b);
-      totalFame += f.earned;
-      if (f.state === "first") completed += 1;
+      const state = stateFor(b);
+      if (state === "first") completed += 1;
       return {
         key: c.key,
         id: c.id,
         name: c.name,
         image: c.image,
-        state: f.state,
+        state,
         bestPlacement: b,
-        earned: f.earned,
-        remaining: f.remaining,
-        completed: f.state === "first",
+        completed: state === "first",
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
   return {
     total: list.length,
     completed,
-    totalFame,
-    maxFame: list.length * FAME.MAX,
     version: champs?.version ?? null,
     champions: list,
     seasonStartMs,

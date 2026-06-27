@@ -7,15 +7,11 @@ export interface ChecklistChampion {
   image: string;
   state: JourneyState;
   bestPlacement: number | null;
-  earned: number;
-  remaining: number;
   completed: boolean;
 }
 export interface Checklist {
   total: number;
   completed: number;
-  totalFame: number;
-  maxFame: number;
   version: string | null;
   champions: ChecklistChampion[];
   seasonStartMs: number | null;

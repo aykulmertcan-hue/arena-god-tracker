@@ -33,6 +33,10 @@ header .close { background: none; border: none; color: #8b90a0; font-size: 18px;
 .empty { padding: 24px 16px; text-align: center; color: #8b90a0; font-size: 13px; line-height: 1.5; }
 .progress { padding: 8px 12px; font-size: 13px; }
 .progress .needcount { color: #f0c060; }
+.firstcount { font-size: 15px; }
+.firstcount .tick { color: #2ecc71; }
+.firstcount strong { color: #f0c040; }
+.progress .sub { color: #b9bdc9; font-size: 12px; }
 .bar { height: 6px; background: #1d212b; border-radius: 999px; margin-top: 6px; overflow: hidden; }
 .fill { height: 100%; background: linear-gradient(90deg, #c89b3c, #f0e6d2); }
 .scanning { color: #6fc3ff; font-size: 11px; margin-top: 4px; }
