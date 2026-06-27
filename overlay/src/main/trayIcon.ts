@@ -1,0 +1,3 @@
+// Auto-generated tray icon (32x32 gold diamond on navy). Do not edit by hand.
+export const TRAY_ICON_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAo0lEQVR4nO3WwQmAMAyF4U7gAA4gzuQQnp3JSdxKodBLISZ5sU2EFnKU/wO1bUoR1jQvt8cMwP8Bx7bmcQGUuAUBA0r0Ovc8KAIC1HELQg2g4ihCBeDiCEIMkMa1CBFAG9cgWAAalyJeAda4BEECvopziLgA91cQ4iMM8RuG2Ii0iCZbsRTR9DDiEF2OYwrR9UJSI1yuZDUCfd4MsM4AxAF4rgel2+YYfoXerwAAAABJRU5ErkJggg==";

@@ -7,6 +7,7 @@ const api = {
   triggerScan: () => ipcRenderer.invoke("scan:trigger"),
   hide: () => ipcRenderer.invoke("window:hide"),
   openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
+  quit: () => ipcRenderer.invoke("app:quit"),
   onChecklist: (cb: (data: unknown) => void) =>
     ipcRenderer.on("checklist:update", (_e, d) => cb(d)),
   onStatus: (cb: (data: unknown) => void) =>

@@ -155,7 +155,10 @@ export default function App() {
           >
             🔑
           </button>
-          <button className="close" onClick={() => window.overlay.hide()}>
+          <button className="iconbtn" title="Quit app" onClick={() => window.overlay.quit()}>
+            ⏻
+          </button>
+          <button className="close" title="Hide (reappears in Arena champ select)" onClick={() => window.overlay.hide()}>
             ×
           </button>
         </div>

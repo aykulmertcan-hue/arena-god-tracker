@@ -12,6 +12,7 @@ import data from "./preview-data.json";
   triggerScan: async () => true,
   hide: async () => true,
   openExternal: async () => true,
+  quit: async () => true,
   onChecklist: () => {},
   onStatus: () => {},
 };

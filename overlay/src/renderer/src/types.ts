@@ -31,6 +31,7 @@ export interface OverlayApi {
   triggerScan: () => Promise<boolean>;
   hide: () => Promise<boolean>;
   openExternal: (url: string) => Promise<boolean>;
+  quit: () => Promise<boolean>;
   onChecklist: (cb: (data: Checklist) => void) => void;
   onStatus: (cb: (data: Status) => void) => void;
 }

@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage } from "electron";
 import { join } from "node:path";
+import { TRAY_ICON_DATA_URL } from "./trayIcon.js";
 
 import { Store, seasonStartMs } from "./core/store.js";
 import { buildChecklist, scanAccount } from "./core/scanner.js";
@@ -11,6 +12,7 @@ import { createOverlayWindow } from "./overlayWindow.js";
 import { LcuWatcher, type LcuState } from "./lcu/watcher.js";
 
 let win: BrowserWindow | null = null;
+let tray: Tray | null = null;
 let store: Store;
 let scanning = false;
 let lastError: string | null = null;
@@ -159,6 +161,10 @@ function registerIpc(): void {
     void shell.openExternal(url);
     return true;
   });
+  ipcMain.handle("app:quit", () => {
+    app.quit();
+    return true;
+  });
 }
 
 app.whenReady().then(() => {
@@ -166,6 +172,19 @@ app.whenReady().then(() => {
   win = createOverlayWindow();
   if (ALWAYS_SHOW) win.show();
   registerIpc();
+
+  // System tray — the way to fully quit (the window's × only hides it so it
+  // can reappear in Arena champ select).
+  tray = new Tray(nativeImage.createFromDataURL(TRAY_ICON_DATA_URL));
+  tray.setToolTip("Arena Season Journey Overlay");
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: "Show overlay", click: () => win?.show() },
+      { type: "separator" },
+      { label: "Quit", click: () => app.quit() },
+    ]),
+  );
+  tray.on("click", () => win?.show());
 
   win.webContents.on("did-finish-load", () => {
     pushStatus();
