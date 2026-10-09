@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "claude-code-filetree": {
+      "source": {
+        "source": "github",
+        "repo": "data-goblin/claude-code-filetree"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "filetree@claude-code-filetree": true
+  }
+}
